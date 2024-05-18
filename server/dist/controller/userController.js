@@ -1,4 +1,4 @@
-import User from '../model/userModel'; // Ensure userModel.ts is properly typed
+import User from '../model/userModel.js'; // Ensure userModel.ts is properly typed
 export const create = async (req, res) => {
     try {
         const newUser = new User(req.body);

@@ -2,12 +2,12 @@
   "name": "server",
   "version": "1.0.0",
   "description": "server for coding challenge",
-  "main": "index.js",
+  "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
+    "start": "node dist/index.js",
     "build": "tsc",
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "ts-node-dev --respawn --transpile-only --loader ts-node/esm src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Uchirai",
@@ -26,11 +26,12 @@
     "express": "^4.19.2",
     "json-as-xlsx": "^2.5.3",
     "lucide-react": "^0.263.1",
+    "mongodb": "^6.6.2",
     "mongoose": "^8.3.3",
     "next": "^14.2.3",
     "next-themes": "^0.2.1",
     "postcss": "8.4.27",
-    "react": "18.2.0",
+    "react": "18.3.1",
     "react-dom": "^18.3.1",
     "react-query": "^3.39.3",
     "shadcn-ui": "^0.8.0",
@@ -45,6 +46,7 @@
     "@types/node": "^20.12.12",
     "nodemon": "^3.1.0",
     "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.5"
   }
 }
