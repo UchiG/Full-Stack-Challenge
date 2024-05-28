@@ -1,4 +1,4 @@
-import User from '../model/userModel.js'; // Ensure userModel.ts is properly typed
+import User from '../model/userModel.js';
 export const create = async (req, res) => {
     try {
         const newUser = new User(req.body);
@@ -15,17 +15,23 @@ export const create = async (req, res) => {
     }
 };
 export const getAllUsers = async (req, res) => {
+    const { page = 1, limit = 10 } = req.query;
+    const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+    };
     try {
-        const userData = await User.find();
-        if (!userData || userData.length === 0) {
+        const users = await User.paginate({}, options);
+        if (!users || users.docs.length === 0) {
             return res.status(404).json({ message: "User data not found." });
         }
-        return res.status(200).json(userData);
+        return res.status(200).json(users);
     }
     catch (error) {
         return res.status(500).json({ errorMessage: error.message });
     }
 };
+
 export const getUserById = async (req, res) => {
     try {
         const id = req.params.id;

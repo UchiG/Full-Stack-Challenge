@@ -1,17 +1,8 @@
 import React, { useEffect, useState } from "react";
-import "./user.css";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import "./user.css";
 
 interface User {
   _id: string;
@@ -22,18 +13,26 @@ interface User {
 
 const User: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get<User[]>("http://localhost:8000/api/users");
-        setUsers(response.data);
-      } catch (error) {
-        console.log("Error while fetching data", error);
-      }
-    };
     fetchData();
-  }, []);
+  }, [currentPage]);
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get<any>(`http://localhost:8000/api/users?page=${currentPage}`);
+      if (Array.isArray(response.data.docs)) {
+        setUsers(response.data.docs);
+        setTotalPages(response.data.totalPages);
+      } else {
+        console.error("Data.docs is not an array:", response.data.docs);
+      }
+    } catch (error) {
+      console.error("Error while fetching data", error);
+    }
+  };
 
   const deleteUser = async (userId: string) => {
     try {
@@ -41,16 +40,49 @@ const User: React.FC = () => {
       setUsers(prevUsers => prevUsers.filter(user => user._id !== userId));
       toast.success(response.data.message, { position: "top-right" });
     } catch (error) {
-      console.log(error);
+      console.error(error);
+    }
+  };
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
   return (
     <div className="userTable">
+      {/* Buttons for navigation */}
+      <div className="pagination mb-3">
+        <button
+          onClick={prevPage}
+          className="btn btn-primary"
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button
+          onClick={nextPage}
+          className="btn btn-primary"
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
+
+      {/* Link to add user */}
       <Link to="/add" className="btn btn-primary" role="button">
         Add User <i className="fa-solid fa-user-plus"></i>
       </Link>
 
+      {/* User table */}
       <table className="table table-bordered">
         <thead>
           <tr>
@@ -80,7 +112,6 @@ const User: React.FC = () => {
           ))}
         </tbody>
       </table>
-          
     </div>
   );
 };

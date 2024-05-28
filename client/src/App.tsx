@@ -1,10 +1,11 @@
+import React from "react";
 import "./App.css";
 import AddUser from "./adduser/AddUser";
 import User from "./getuser/User";
 import Update from "./updateuser/Update";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-function App() {
+const App: React.FC = () => {
   return (
     <div className="App">
       <Router>

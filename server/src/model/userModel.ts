@@ -1,9 +1,14 @@
 import mongoose, { Document, Schema, Model } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 interface IUser extends Document {
   name: string;
   email: string;
   address: string;
+}
+
+interface IUserModel extends Model<IUser> {
+  paginate: (query: any, options: any) => any;
 }
 
 const userSchema: Schema = new Schema({
@@ -21,6 +26,8 @@ const userSchema: Schema = new Schema({
   },
 });
 
-const User: Model<IUser> = mongoose.model<IUser>('User', userSchema);
+userSchema.plugin(mongoosePaginate);
+const User: IUserModel = mongoose.model<IUser, IUserModel>('User', userSchema);
+
 
 export default User;

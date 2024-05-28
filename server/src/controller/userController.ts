@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import User from '../model/userModel';  // Ensure userModel.ts is properly typed
+import User from '../model/userModel';
 
 export const create = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -18,12 +18,18 @@ export const create = async (req: Request, res: Response): Promise<Response> => 
 };
 
 export const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
+  const { page = 1, limit = 10 } = req.query;
+
   try {
-    const userData = await User.find();
-    if (!userData || userData.length === 0) {
+    const options = {
+      page: parseInt(page as string, 10),
+      limit: parseInt(limit as string, 10),
+    };
+    const users = await User.paginate({}, options);
+    if (!users || users.docs.length === 0) {
       return res.status(404).json({ message: "User data not found." });
     }
-    return res.status(200).json(userData);
+    return res.status(200).json(users);
   } catch (error: any) {
     return res.status(500).json({ errorMessage: error.message });
   }

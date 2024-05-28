@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoute';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 dotenv.config();
 
