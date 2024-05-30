@@ -3,14 +3,14 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import userRoutes from './routes/userRoute';
+import route from './routes/userRoute.js';
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/api/users', userRoutes);
+app.use('/api/users', route);
 app.get('/', (req, res) => {
     res.send('API is running...');
 });

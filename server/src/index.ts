@@ -8,10 +8,13 @@ import cors from 'cors';
 dotenv.config();
 
 const app = express();
+// app.get('/users', (req, res) => {
+//   res.json(users)
+// })
 app.use(bodyParser.json());
 app.use(cors());
 
-const PORT: string | number = process.env.PORT || 7000;
+const PORT: string | number = process.env.PORT || 8000;
 const MONGOURL: string = process.env.MONGO_URL as string;
 
 mongoose

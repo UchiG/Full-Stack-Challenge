@@ -22,7 +22,7 @@ const User: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get<any>(`http://localhost:8000/api/users?page=${currentPage}`);
+      const response = await axios.get<any>(`http://localhost:8000/api/users/${currentPage}`);
       if (Array.isArray(response.data.docs)) {
         setUsers(response.data.docs);
         setTotalPages(response.data.totalPages);
@@ -36,7 +36,7 @@ const User: React.FC = () => {
 
   const deleteUser = async (userId: string) => {
     try {
-      const response = await axios.delete(`http://localhost:8000/api/delete/user/${userId}`);
+      const response = await axios.delete(`http://localhost:7000/api/delete/user/${userId}`);
       setUsers(prevUsers => prevUsers.filter(user => user._id !== userId));
       toast.success(response.data.message, { position: "top-right" });
     } catch (error) {
@@ -98,7 +98,7 @@ const User: React.FC = () => {
             <tr key={user._id}>
               <td>{index + 1}</td>
               <td>{user.name}</td>
-              <td>{user.email} </td>
+              <td>{user.email}</td>
               <td>{user.address}</td>
               <td className="actionButtons">
                 <Link to={`/update/${user._id}`} className="btn btn-info" role="button">

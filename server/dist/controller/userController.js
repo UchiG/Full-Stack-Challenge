@@ -15,10 +15,11 @@ export const create = async (req, res) => {
     }
 };
 export const getAllUsers = async (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1 } = req.params;
+    const limit = 5;
     const options = {
         page: parseInt(page, 10),
-        limit: parseInt(limit, 10),
+        limit: limit,
     };
     try {
         const users = await User.paginate({}, options);
@@ -31,7 +32,6 @@ export const getAllUsers = async (req, res) => {
         return res.status(500).json({ errorMessage: error.message });
     }
 };
-
 export const getUserById = async (req, res) => {
     try {
         const id = req.params.id;

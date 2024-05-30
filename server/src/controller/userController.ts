@@ -18,16 +18,17 @@ export const create = async (req: Request, res: Response): Promise<Response> => 
 };
 
 export const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1 } = req.params;
+  const limit = 5;
+  const options = {
+    page: parseInt(page as string, 10),
+    limit: limit,
+  };
 
   try {
-    const options = {
-      page: parseInt(page as string, 10),
-      limit: parseInt(limit as string, 10),
-    };
     const users = await User.paginate({}, options);
     if (!users || users.docs.length === 0) {
-      return res.status(404).json({ message: "User data not found." });
+      return res.status(404).json({ message: "User data not found." }); 
     }
     return res.status(200).json(users);
   } catch (error: any) {
