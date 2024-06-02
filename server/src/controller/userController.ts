@@ -18,23 +18,24 @@ export const create = async (req: Request, res: Response): Promise<Response> => 
 };
 
 export const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
-  const { page = 1 } = req.params;
+  const page = parseInt(req.params.page, 10) || 1;
   const limit = 5;
   const options = {
-    page: parseInt(page as string, 10),
-    limit: limit,
+    page,
+    limit,
   };
 
   try {
     const users = await User.paginate({}, options);
     if (!users || users.docs.length === 0) {
-      return res.status(404).json({ message: "User data not found." }); 
+      return res.status(404).json({ message: "User data not found." });
     }
     return res.status(200).json(users);
   } catch (error: any) {
     return res.status(500).json({ errorMessage: error.message });
   }
 };
+
 
 export const getUserById = async (req: Request, res: Response): Promise<Response> => {
   try {

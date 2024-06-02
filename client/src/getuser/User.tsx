@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import Button from '@mui/material/Button';
 import "./user.css";
+
 
 interface User {
   _id: string;
@@ -15,14 +17,18 @@ const User: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [filters, setFilters] = useState<{ name?: string; email?: string }>({});
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, filters]);
 
   const fetchData = async () => {
     try {
-      const response = await axios.get<any>(`http://localhost:8000/api/users/${currentPage}`);
+      const response = await axios.get<any>(
+        `http://localhost:8000/api/users/${currentPage}?${new URLSearchParams(filters).toString()}`
+      );
       if (Array.isArray(response.data.docs)) {
         setUsers(response.data.docs);
         setTotalPages(response.data.totalPages);
@@ -36,7 +42,7 @@ const User: React.FC = () => {
 
   const deleteUser = async (userId: string) => {
     try {
-      const response = await axios.delete(`http://localhost:7000/api/delete/user/${userId}`);
+      const response = await axios.delete(`http://localhost:8000/api/delete/user/${userId}`);
       setUsers(prevUsers => prevUsers.filter(user => user._id !== userId));
       toast.success(response.data.message, { position: "top-right" });
     } catch (error) {
@@ -56,64 +62,110 @@ const User: React.FC = () => {
     }
   };
 
+  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFilters({ ...filters, [name]: value });
+  };
+
+  const toggleCardExpansion = (userId: string) => {
+    setExpandedCards(prevState => {
+      const newExpandedCards = new Set(prevState);
+      if (newExpandedCards.has(userId)) {
+        newExpandedCards.delete(userId);
+      } else {
+        newExpandedCards.add(userId);
+      }
+      return newExpandedCards;
+    });
+  };
+
   return (
     <div className="userTable">
+      {/* Link to add user */}
+      <Link to="/add" className="btn btn-primary" role="button">
+        <Button variant="contained" color="primary">
+          Add User <i className="fa-solid fa-user-plus"></i>
+        </Button>
+      </Link>
+
+      {/* Filter form */}
+      <form className="mb-4">
+        <div className="form-group">
+          <label htmlFor="name">Name:</label>
+          <input
+            type="text"
+            className="form-control w-32" // Adjust width here
+            id="name"
+            name="name"
+            value={filters.name || ""}
+            onChange={handleFilterChange}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="email">Email:</label>
+          <input
+            type="email"
+            className="form-control w-32" // Adjust width here
+            id="email"
+            name="email"
+            value={filters.email || ""}
+            onChange={handleFilterChange}
+          />
+        </div>
+        <button type="button" className="btn btn-primary" onClick={fetchData}>
+          Filter
+        </button>
+      </form>
+
+      {/* User cards */}
+      <div className="grid grid-cols-3 gap-4"> {/* Adjust column count and gap */}
+        {users.map(user => (
+          <div
+            key={user._id}
+            className="border p-4 rounded shadow cursor-pointer w-48" // Adjust card width here
+            onClick={() => toggleCardExpansion(user._id)}
+          >
+            <p>{user.name}</p>
+            <p>{user.email}</p>
+            {expandedCards.has(user._id) && (
+              <div>
+                <p>{user.address}</p>
+                <div className="flex justify-end mt-2">
+                  <Link to={`/update/${user._id}`} className="btn btn-info" role="button">
+                    Edit
+                  </Link>
+                  <button onClick={() => deleteUser(user._id)} className="btn btn-danger ml-2">
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
       {/* Buttons for navigation */}
-      <div className="pagination mb-3">
-        <button
+      <div className="pagination mb-3 mt-4">
+        <Button
+          variant="contained"
+          color="primary"
           onClick={prevPage}
-          className="btn btn-primary"
           disabled={currentPage === 1}
         >
           Previous
-        </button>
+        </Button>
         <span>Page {currentPage} of {totalPages}</span>
-        <button
+        <Button
+          variant="contained"
+          color="primary"
           onClick={nextPage}
-          className="btn btn-primary"
           disabled={currentPage === totalPages}
         >
           Next
-        </button>
+        </Button>
       </div>
-
-      {/* Link to add user */}
-      <Link to="/add" className="btn btn-primary" role="button">
-        Add User <i className="fa-solid fa-user-plus"></i>
-      </Link>
-
-      {/* User table */}
-      <table className="table table-bordered">
-        <thead>
-          <tr>
-            <th scope="col">S.No.</th>
-            <th scope="col">Name</th>
-            <th scope="col">Email</th>
-            <th scope="col">Address</th>
-            <th scope="col">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user, index) => (
-            <tr key={user._id}>
-              <td>{index + 1}</td>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>{user.address}</td>
-              <td className="actionButtons">
-                <Link to={`/update/${user._id}`} className="btn btn-info" role="button">
-                  <i className="fa-solid fa-pen-to-square"></i>
-                </Link>
-                <button onClick={() => deleteUser(user._id)} className="btn btn-danger" type="button">
-                  <i className="fa-solid fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
-};
+}
 
 export default User;

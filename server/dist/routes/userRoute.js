@@ -3,6 +3,7 @@ import { create, deleteUser, getAllUsers, getUserById, update, } from '../contro
 const route = express.Router();
 route.post('/user', create);
 route.get('/users/:page', getAllUsers); // Changed to capture page parameter
+// route.get('/users', getAllUsers);
 route.get('/user/:id', getUserById);
 route.put('/update/user/:id', update);
 route.delete('/delete/user/:id', deleteUser);

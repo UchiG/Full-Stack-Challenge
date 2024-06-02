@@ -15,11 +15,11 @@ export const create = async (req, res) => {
     }
 };
 export const getAllUsers = async (req, res) => {
-    const { page = 1 } = req.params;
+    const page = parseInt(req.params.page, 10) || 1;
     const limit = 5;
     const options = {
-        page: parseInt(page, 10),
-        limit: limit,
+        page,
+        limit,
     };
     try {
         const users = await User.paginate({}, options);
