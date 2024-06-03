@@ -15,14 +15,21 @@ export const create = async (req, res) => {
     }
 };
 export const getAllUsers = async (req, res) => {
-    const page = parseInt(req.params.page, 10) || 1;
+    const { page = '1', name = '', email = '' } = req.query; // Access filter parameters from query string
     const limit = 5;
     const options = {
-        page,
-        limit,
+        page: parseInt(page, 10),
+        limit: limit,
     };
     try {
-        const users = await User.paginate({}, options);
+        const filterQuery = {}; // Initialize an empty filter query object
+        if (name) {
+            filterQuery.name = { $regex: name, $options: 'i' }; // Case-insensitive name search
+        }
+        if (email) {
+            filterQuery.email = { $regex: email, $options: 'i' }; // Case-insensitive email search
+        }
+        const users = await User.paginate(filterQuery, options); // Apply filter query to pagination
         if (!users || users.docs.length === 0) {
             return res.status(404).json({ message: "User data not found." });
         }
@@ -72,4 +79,21 @@ export const deleteUser = async (req, res) => {
     catch (error) {
         return res.status(500).json({ errorMessage: error.message });
     }
+};
+export const filterUsers = async (req, res) => {
+    const { name, email } = req.query;
+    const filters = {};
+    if (name) {
+        filters.name = { $regex: name, $options: "i" };
+    }
+    if (email) {
+        filters.email = { $regex: email, $options: "i" };
+    }
+    const options = {
+        page: parseInt(req.params.page) || 1,
+        limit: 10,
+        sort: { _id: -1 },
+    };
+    const users = await User.paginate(filters, options);
+    res.json(users);
 };

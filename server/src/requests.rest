@@ -1,7 +1,9 @@
 // some api endpoints for you to test
 
-GET http://localhost:8000/api/users/1?name=try&email=test@gmail.com
-GET http://localhost:8000/api/users/1
+GET http://localhost:8000/api/users/1?name=anything&email=test@gmail.com
+GET http://localhost:8000/api/users/1?name=xyz
+GET http://localhost:8000/api/users/1?email=test@gmail.com
+
 GET http://localhost:8000/api/users/2
 GET http://localhost:8000/api/users/3
 

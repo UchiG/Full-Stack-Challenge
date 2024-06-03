@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -12,53 +13,45 @@ interface User {
   address: string;
 }
 
+const fetchUsers = async (page: number, filters: { name?: string; email?: string }) => {
+  const response = await axios.get<any>(
+    `http://localhost:8000/api/users/${page}?${new URLSearchParams(filters).toString()}`
+  );
+  return response.data;
+};
+
+const deleteUser = async (userId: string) => {
+  const response = await axios.delete(`http://localhost:8000/api/delete/user/${userId}`);
+  return response.data;
+};
+
 const User: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState<{ name?: string; email?: string }>({});
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, filters]);
+  const queryClient = useQueryClient();
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get<any>(
-        `http://localhost:8000/api/users/${currentPage}?${new URLSearchParams(filters).toString()}`
-      );
-      if (Array.isArray(response.data.docs)) {
-        setUsers(response.data.docs);
-        setTotalPages(response.data.totalPages);
-      } else {
-        console.error("Data.docs is not an array:", response.data.docs);
-      }
-    } catch (error) {
-      console.error("Error while fetching data", error);
+  const { data, error, isLoading } = useQuery(
+    ['users', currentPage, filters],
+    () => fetchUsers(currentPage, filters),
+    {
+      keepPreviousData: true,
     }
-  };
+  );
 
-  const deleteUser = async (userId: string) => {
-    try {
-      const response = await axios.delete(`http://localhost:8000/api/delete/user/${userId}`);
-      setUsers(prevUsers => prevUsers.filter(user => user._id !== userId));
-      toast.success(response.data.message, { position: "top-right" });
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const mutation = useMutation(deleteUser, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(['users', currentPage, filters]);
+      toast.success("User deleted successfully", { position: "top-right" });
+    },
+  });
 
-  const nextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading data</div>;
 
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
+  const handleDelete = (userId: string) => {
+    mutation.mutate(userId);
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,6 +71,18 @@ const User: React.FC = () => {
     });
   };
 
+  const nextPage = () => {
+    if (currentPage < data.totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
     <div className="userTable">
       {/* Link to add user */}
@@ -93,7 +98,7 @@ const User: React.FC = () => {
           <label htmlFor="name">Name:</label>
           <input
             type="text"
-            className="form-control w-32" // Adjust width here
+            className="form-control w-32"
             id="name"
             name="name"
             value={filters.name || ""}
@@ -104,39 +109,41 @@ const User: React.FC = () => {
           <label htmlFor="email">Email:</label>
           <input
             type="email"
-            className="form-control w-32" // Adjust width here
+            className="form-control w-32"
             id="email"
             name="email"
             value={filters.email || ""}
             onChange={handleFilterChange}
           />
         </div>
-        <button type="button" className="btn btn-primary" onClick={fetchData}>
+        <button type="button" className="btn btn-primary" onClick={() => setCurrentPage(1)}>
           Filter
         </button>
       </form>
 
       {/* User cards */}
-      <div className="grid grid-cols-3 gap-4"> {/* Adjust column count and gap */}
-        {users.map(user => (
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        {data.docs.map((user: User) => (
           <div
             key={user._id}
-            className="border p-4 rounded shadow cursor-pointer w-48 mb-4" // Adjust card width and add margin-bottom
+            className="border p-4 rounded shadow cursor-pointer w-48 mb-4"
             onClick={() => toggleCardExpansion(user._id)}
           >
             <p>{user.name}</p>
             <p>{user.email}</p>
-            {expandedCards.has(user._id) && (
-              <p>{user.address}</p>
-            )}
-            <div className="flex justify-end mt-2">
+            <div className="flex justify-end mt-2 space-x-2">
               <Link to={`/update/${user._id}`} className="btn btn-info" role="button">
                 Edit
               </Link>
-              <button onClick={() => deleteUser(user._id)} className="btn btn-danger ml-2">
+              <button onClick={() => handleDelete(user._id)} className="btn btn-danger">
                 Delete
               </button>
             </div>
+            {expandedCards.has(user._id) && (
+              <div>
+                <p>{user.address}</p>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -151,12 +158,12 @@ const User: React.FC = () => {
         >
           Previous
         </Button>
-        <span>Page {currentPage} of {totalPages}</span>
+        <span>Page {currentPage} of {data.totalPages}</span>
         <Button
           variant="contained"
           color="primary"
           onClick={nextPage}
-          disabled={currentPage === totalPages}
+          disabled={currentPage === data.totalPages}
         >
           Next
         </Button>
