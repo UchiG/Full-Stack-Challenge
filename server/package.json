@@ -15,6 +15,7 @@
   "dependencies": {
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
+    "@types/react-query": "^1.2.9",
     "autoprefixer": "10.4.14",
     "body-parser": "^1.20.2",
     "class-variance-authority": "^0.7.0",

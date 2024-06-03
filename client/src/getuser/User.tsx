@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import Button from '@mui/material/Button';
 import "./user.css";
 
-
 interface User {
   _id: string;
   name: string;
@@ -122,24 +121,22 @@ const User: React.FC = () => {
         {users.map(user => (
           <div
             key={user._id}
-            className="border p-4 rounded shadow cursor-pointer w-48" // Adjust card width here
+            className="border p-4 rounded shadow cursor-pointer w-48 mb-4" // Adjust card width and add margin-bottom
             onClick={() => toggleCardExpansion(user._id)}
           >
             <p>{user.name}</p>
             <p>{user.email}</p>
             {expandedCards.has(user._id) && (
-              <div>
-                <p>{user.address}</p>
-                <div className="flex justify-end mt-2">
-                  <Link to={`/update/${user._id}`} className="btn btn-info" role="button">
-                    Edit
-                  </Link>
-                  <button onClick={() => deleteUser(user._id)} className="btn btn-danger ml-2">
-                    Delete
-                  </button>
-                </div>
-              </div>
+              <p>{user.address}</p>
             )}
+            <div className="flex justify-end mt-2">
+              <Link to={`/update/${user._id}`} className="btn btn-info" role="button">
+                Edit
+              </Link>
+              <button onClick={() => deleteUser(user._id)} className="btn btn-danger ml-2">
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>
