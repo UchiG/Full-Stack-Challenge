@@ -4,7 +4,6 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import Button from '@mui/material/Button';
-import { UserSchema } from "./user.schema";
 import "./user.css";
 
 interface User {
